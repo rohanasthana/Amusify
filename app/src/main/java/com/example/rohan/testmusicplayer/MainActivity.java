@@ -537,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                     setController();
                     playbackPaused=false;
                 }
-                // controller.show(0);
+                controller.show(0);
             }
         });
         controller.setMediaPlayer(this);
