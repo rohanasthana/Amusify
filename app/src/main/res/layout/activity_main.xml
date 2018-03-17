@@ -1,0 +1,372 @@
+<com.sothree.slidinguppanel.SlidingUpPanelLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    android:gravity="bottom"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sliding_layout"
+    sothree:umanoPanelHeight="68dp"
+    sothree:umanoShadowHeight="4dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:clickable="true"
+    tools:context="com.example.rohan.testmusicplayer.MainActivity"
+    sothree:umanoDragView="@id/bottom_bar"
+
+
+    >
+
+
+
+
+    <RelativeLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:background="#00000f"
+        >
+
+
+
+
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/tablayout"
+            android:id="@+id/welcome_text"
+            android:text="Good Morning"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            />
+
+
+
+
+
+
+        <android.support.v7.widget.Toolbar
+            android:layout_height="110dp"
+            android:layout_width="match_parent"
+            android:layout_marginTop="0dp"
+            android:id="@+id/toolbar"
+            android:background="#00000f"
+            app:titleTextColor="#ffffff"
+            app:theme="@style/ToolBarColoredBackArrow"
+
+            />
+        <android.support.design.widget.TabLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:id="@+id/tablayout"
+            android:background="#00000f"
+            android:minHeight="?attr/actionBarSize"
+            app:tabTextColor="#ffffff"
+            app:tabIndicatorColor="#ffffff"
+            app:tabSelectedTextColor="#ffffff"
+            android:animateLayoutChanges="true"
+            app:tabMode="scrollable"
+            app:tabMinWidth="100dp"
+            app:tabMaxWidth="100dp"
+
+            >
+
+        </android.support.design.widget.TabLayout>
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="11dp"
+            android:animateLayoutChanges="true"
+            android:src="@drawable/logo_white" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </RelativeLayout>
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:gravity="bottom"
+        android:id="@+id/sliding_now_playing"
+        sothree:umanoPanelHeight="48dp"
+        sothree:umanoShadowHeight="4dp"
+        android:clickable="true"
+        sothree:umanoOverlay="true"
+        sothree:umanoDragView="@id/bottom_bar_now"
+        tools:context=".MainActivity"
+
+        >
+    <RelativeLayout
+        android:onClick="songPicked"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#00000f"
+
+        >
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:id="@+id/album_cover"
+            />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#af00000f"/>
+        <!-- TODO: Update blank fragment layout -->
+        <ListView
+            android:layout_marginTop="65dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/song_list"
+            android:fastScrollEnabled="true"
+            android:fastScrollAlwaysVisible="true"
+            android:smoothScrollbar="true"
+            android:drawingCacheQuality="low"
+            android:scrollingCache="false"
+            android:fastScrollStyle="@color/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="48dp"
+
+            />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:orientation="horizontal"
+
+            >
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#212121"
+                android:id="@+id/bottom_bar"
+                />
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerVertical="true"
+                android:id="@+id/album_cover_small"
+                android:layout_marginLeft="10dp"
+                />
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#ffffff"
+                android:textSize="20sp"
+                android:padding="3dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/song_name"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxWidth="200sp"
+
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/artist_name"
+                android:textColor="#e0e0e0"
+                android:textSize="15sp"
+                android:layout_below="@+id/song_name"
+                android:layout_centerHorizontal="true"
+                android:maxWidth="200sp"
+                android:ellipsize="end"
+                android:maxLines="1"
+
+                />
+            <ImageButton
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/play"
+                android:id="@+id/pause_icon"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/next_icon"
+                android:layout_marginLeft="10dp"
+                />
+            <ImageButton
+                android:layout_width="35dp"
+                android:layout_height="30dp"
+                android:background="@drawable/next_song"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:id="@+id/next_icon"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                />
+
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#00000f"
+            >
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="#00000f"
+                android:id="@+id/bottom_bar_now"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#00000f"
+                android:scaleType="centerCrop"
+                android:id="@+id/now_playing"
+                />
+            <android.support.v7.widget.CardView
+                android:layout_width="250dp"
+                android:layout_height="250dp"
+                android:elevation="12dp"
+                android:id="@+id/view2"
+                sothree:cardCornerRadius="125dp"
+                sothree:cardBackgroundColor="#00000f"
+                android:layout_marginTop="150dp"
+                android:layout_centerHorizontal="true"
+                android:innerRadius="0dp"
+                android:shape="ring"
+                android:thicknessRatio="1.9">
+                <ImageView
+                    android:layout_height="250dp"
+                    android:layout_width="match_parent"
+                    android:id="@+id/now_playing_album"
+
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    >
+                </ImageView>
+            </android.support.v7.widget.CardView>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#af00000f"/>
+
+            <TextView
+                android:id="@+id/now_playing_text"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/view2"
+                android:textColor="#ffffff"
+                android:textSize="40sp"
+                android:layout_marginTop="30dp"
+                android:layout_centerHorizontal="true"
+                />
+            <TextView
+                android:id="@+id/now_playing_artist"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/now_playing_text"
+                android:textColor="#bdbdbd"
+                android:textSize="20sp"
+                android:layout_centerHorizontal="true"
+                />
+            <ImageButton
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/now_playing_pause"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="50dp"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/now_playing_pause"
+
+
+                />
+            <ImageButton
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/play_next"
+                android:id="@+id/play_next"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="47dp"
+                android:layout_marginRight="80dp"
+                android:layout_alignParentRight="true"
+
+                />
+            <ImageButton
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/play_prev"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="47dp"
+                android:layout_marginLeft="70dp"
+                android:layout_alignParentLeft="true"
+                android:id="@+id/play_prev"
+                />
+            <ImageButton
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="59dp"
+                android:layout_marginRight="30dp"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/shuffle_off"
+                android:id="@+id/shuffle_icon"
+                />
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@drawable/menu"
+                android:layout_centerHorizontal="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
+                android:text="Next: "
+                android:textColor="#ffffff"
+                />
+
+
+        </RelativeLayout>
+
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+
+
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+
+
+
