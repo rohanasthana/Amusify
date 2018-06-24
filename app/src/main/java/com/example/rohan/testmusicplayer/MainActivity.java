@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private ImageButton mNowPlayingPrev;
     private ImageButton mNowPlayingNext;
     private Bitmap bitmap=null;
+    private SeekBar mSeekBar;
 
 
 
@@ -112,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mSeekBar=(SeekBar)findViewById(R.id.seek_bar);
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -261,7 +263,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
 
 
-
     }
 
     private ServiceConnection musicConnection = new ServiceConnection() {
@@ -359,6 +360,14 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+                catch (NullPointerException e){
+                    e.printStackTrace();
+                    bitmap= BitmapFactory.decodeResource(getResources(),R.drawable.logo_white);
+                    Blurry.with(getApplicationContext()).from(bitmap).into(mAlbumArt);
+                    Blurry.with(getApplicationContext()).from(bitmap).into(mNowPlaying);
+                    mAlbumArtSmall.setImageBitmap(bitmap);
+                    mNowPlayingAlbum.setImageBitmap(bitmap);
                 }
                 if(bitmap==null){
                     bitmap= BitmapFactory.decodeResource(getResources(),R.drawable.logo_white);
