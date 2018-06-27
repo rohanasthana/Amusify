@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
                 if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.EXPANDED)
                 { mSlidingPane.setTouchEnabled(false);
-                   controller.show();
+                   //controller.show();
                 }
 
 // Hide the status bar.
