@@ -126,26 +126,27 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED) {
 
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                String perm[]={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.RECORD_AUDIO};
+                requestPermissions(perm,1);
+            }
+
 
 // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
 // app-defined int constant
 
-                return;
-            }
-            if (checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-                    != PackageManager.PERMISSION_GRANTED) {
 
-                requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, 2);
+
 
 // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
 // app-defined int constant
 
-                return;
+
             }
-        }
+
+
 
         welcome=findViewById(R.id.welcome_text);
         mSlidingPane = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
@@ -187,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         songView.setAdapter(songAdt);
         fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
         fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
+
         mSlidingPane.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -197,6 +199,8 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
                 if (mSlidingPane.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
+                    controller.hide();
+
                     mBottomBar.setBackgroundColor(Color.parseColor("#00000f"));
                 } else {
                     mBottomBar.setBackgroundColor(Color.parseColor("#212121"));
@@ -214,14 +218,16 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
                 if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.EXPANDED)
-                { mSlidingPane.setTouchEnabled(false);}
+                { mSlidingPane.setTouchEnabled(false);
+                   controller.show();
+                }
 
 // Hide the status bar.
 
                 else
                     mSlidingPane.setTouchEnabled(true);
 
-
+                    controller.hide();
             }
 
         });
@@ -444,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             setController();
             playbackPaused = false;
         }
-        //controller.show(0);
+        controller.show(0);
 
 
     }
@@ -582,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                     setController();
                     playbackPaused=false;
                 }
-                // controller.show(0);
+                 //controller.show(0);
             }
         }, new View.OnClickListener() {
             @Override
@@ -598,6 +604,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         controller.setMediaPlayer(this);
         controller.setAnchorView(findViewById(R.id.now_playing));
         controller.setEnabled(true);
+
     }
     public void speechrecog(final DroidSpeech droid){
 
@@ -624,7 +631,8 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             public void onDroidSpeechFinalResult(String finalSpeechResult) {
                 RecognizerActivity recognizer = new RecognizerActivity(MainActivity.this);
                 int s = recognizer.getType(finalSpeechResult);
-                if (s >=0) {
+                Log.i("S is",Double.toString(s));
+                if (s >=0){
                     musicSrv.setSong(s);
                     musicSrv.playSong();
 
