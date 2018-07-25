@@ -1,4 +1,5 @@
-<com.sothree.slidinguppanel.SlidingUpPanelLayout android:layout_height="match_parent"
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+    android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:sothree="http://schemas.android.com/apk/res-auto"
     android:gravity="bottom"
@@ -9,10 +10,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:clickable="true"
     tools:context="com.example.rohan.testmusicplayer.MainActivity"
-    sothree:umanoDragView="@id/bottom_bar"
-
-
-    >
+    sothree:umanoDragView="@id/bottom_bar">
 
 
 
@@ -50,6 +48,50 @@
             android:id="@+id/speak"
             android:text="speak"
             />
+        <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/speak"
+            xmlns:android="http://schemas.android.com/apk/res/android">
+            <RelativeLayout
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/re">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/rt">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Albums"
+                    android:textColor="#ffffff"
+                    android:textSize="25sp"
+                    android:id="@+id/albumHead"
+                    android:textStyle="bold"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginBottom="10dp"
+                    />
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/recyclerView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+            </RelativeLayout>
+
+
+
+        </RelativeLayout>
+
+
+
+
 
 
 
@@ -93,23 +135,10 @@
             android:animateLayoutChanges="true"
             android:src="@drawable/logo_white" />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </RelativeLayout>
+
+
+
     <com.sothree.slidinguppanel.SlidingUpPanelLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
@@ -375,7 +404,11 @@
         </RelativeLayout>
 
 
+
+
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+
 
 
 

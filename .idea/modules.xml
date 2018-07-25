@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Amusify-master.iml" filepath="$PROJECT_DIR$/Amusify-master.iml" />
-      <module fileurl="file://C:\Amusify-master\TestMusicPlayer.iml" filepath="C:\Amusify-master\TestMusicPlayer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Amusify.iml" filepath="$PROJECT_DIR$/Amusify.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

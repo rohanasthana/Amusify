@@ -20,14 +20,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -41,6 +45,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
@@ -94,6 +99,11 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private SeekBar mSeekBar;
     private Button speak;
     private DroidSpeech droid;
+    MainAdapter mainAdapter;
+    MediaPlayer mediaPlayer;
+    private ArrayList<SongInfo> _songs=new ArrayList<SongInfo>();
+    RecyclerView recyclerView;
+    TextView albumHead,tvArtist,tvSong;
 
 
 
@@ -142,9 +152,44 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
 // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
 // app-defined int constant
+        }
 
+         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
+        mainAdapter=new MainAdapter(this,_songs);
+        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this, LinearLayout.HORIZONTAL,false);
+        DividerItemDecoration dividerItemDecoration=new DividerItemDecoration(recyclerView.getContext(), LinearLayout.HORIZONTAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(mainAdapter);
+        mainAdapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(final Button b, View v, SongInfo obj, int position) {
+                try{
+                    if(b.getText().toString().equals("Stop")){
+                        b.setText("Play");
+                        mediaPlayer.stop();
+                        mediaPlayer.reset();
+                        mediaPlayer.release();
+                        mediaPlayer=null;
+                    }
+                    else{
+                        mediaPlayer=new MediaPlayer();
+                        mediaPlayer.setDataSource(obj.getSongUrl());
+                        mediaPlayer.prepareAsync();
+                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mp) {
+                                mp.start();
+                                b.setText("Stop");
+                            }
+                        });
+                    }
+
+                }catch (IOException e){}
             }
+        });
+        CheckPermission();
 
 
 
@@ -170,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mNowPlayingPause=(ImageButton)findViewById(R.id.now_playing_pause);
         mNowPlayingNext=(ImageButton)findViewById(R.id.play_next);
         mNowPlayingPrev=(ImageButton)findViewById(R.id.play_prev);
+        albumHead=findViewById(R.id.albumHead);
         speak=findViewById(R.id.speak);
         Typeface font = Typeface.createFromAsset(getAssets(), "fonts/muktamaheelight.ttf");
         Typeface font1=Typeface.createFromAsset(getAssets(),"fonts/muktaamaheeextralight.ttf");
@@ -177,6 +223,8 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mArtistName.setTypeface(font);
         mNowPlayingText.setTypeface(font1);
         mNowPlayingArtist.setTypeface(font1);
+        albumHead.setTypeface(font);
+
         mSlidingPane.setAnchorPoint(1.0f);
         songList=getSongList(this);
         Collections.sort(songList, new Comparator<Song>() {
@@ -310,8 +358,61 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             }
 
         });
+    loadSongs();
+    }
+
+    private void CheckPermission(){
+        if(Build.VERSION.SDK_INT>=23){
+            if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!=
+                    PackageManager.PERMISSION_GRANTED){
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},123);
+                return;
+            }
+        }
+        else{
+            loadSongs();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case 123:
+                if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    loadSongs();
+                    Toast.makeText(this,"Permission Denied",Toast.LENGTH_SHORT).show();
+                    CheckPermission();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
 
     }
+    private void loadSongs(){
+        Uri uri= MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String selection=MediaStore.Audio.Media.IS_MUSIC+"!=0";
+        Cursor cursor=getContentResolver().query(uri,null,selection,null,null);
+        if(cursor!=null){
+            if(cursor.moveToFirst()) {
+                do {
+                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                    String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                    String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                    String albumname=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                    long albumArt=cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+                    SongInfo s=new SongInfo(name,artist,url,albumname,albumArt);
+                    _songs.add(s);
+                }while (cursor.moveToNext());
+            }
+            cursor.close();
+            mainAdapter=new MainAdapter(this,_songs);
+        }
+
+    }
+
+
+
 
     private ServiceConnection musicConnection = new ServiceConnection() {
 
@@ -450,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             setController();
             playbackPaused = false;
         }
-        controller.show(0);
+       // controller.show(0);
 
 
     }
@@ -603,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         });
         controller.setMediaPlayer(this);
         controller.setAnchorView(findViewById(R.id.now_playing));
-        controller.setEnabled(true);
+        controller.setEnabled(false);
 
     }
     public void speechrecog(final DroidSpeech droid){
