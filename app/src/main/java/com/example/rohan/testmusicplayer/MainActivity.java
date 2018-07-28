@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private Bitmap bitmap = null;
     private SeekBar mSeekBar;
     private Button speak;
+    private View back;
+    ImageView mic;
+    TextView recog;
+
     MainAdapter mainAdapter;
     MediaPlayer mediaPlayer;
     private ArrayList<SongInfo> _songs = new ArrayList<SongInfo>();
@@ -332,9 +336,9 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         });
 
         ImageButton speak1 = findViewById(R.id.speak1);
-        final View back=findViewById(R.id.black);
-        final ImageView mic=findViewById(R.id.mic);
-        final TextView recog=findViewById(R.id.recognize);
+        back=findViewById(R.id.black);
+        mic=findViewById(R.id.mic);
+        recog=findViewById(R.id.recognize);
         final SpeechRecognition speechRecognition=new SpeechRecognition(this);
         speechRecognition.setSpeechRecognitionPermissionListener(new OnSpeechRecognitionPermissionListener() {
             @Override
@@ -586,19 +590,27 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             mSlidingPaneNow.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
         } else {
-            new AlertDialog.Builder(this)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle("Exit")
-                    .setMessage("Are you sure you want to exit?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
-                        }
+            if(back.getVisibility()==View.VISIBLE){
+                back.setVisibility(View.INVISIBLE);
+                mic.setVisibility(View.INVISIBLE);
+                recog.setText("");
+            }
 
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
+            else {
+                new AlertDialog.Builder(this)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("Exit")
+                        .setMessage("Are you sure you want to exit?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
 
         }
 
