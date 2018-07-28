@@ -1,12 +1,13 @@
 package com.example.rohan.testmusicplayer;
 import com.example.rohan.testmusicplayer.MusicService.MusicBinder;
+import com.maxwell.speechrecognition.OnSpeechRecognitionListener;
+import com.maxwell.speechrecognition.OnSpeechRecognitionPermissionListener;
+import com.maxwell.speechrecognition.SpeechRecognition;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.squareup.picasso.Picasso;
 import com.triggertrap.seekarc.SeekArc;
-import com.vikramezhil.droidspeech.DroidSpeech;
-import com.vikramezhil.droidspeech.OnDSListener;
-
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -26,6 +27,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -61,13 +63,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import jp.wasabeef.blurry.Blurry;
 
-public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl{
+public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl {
     private ArrayList<Song> songList;
     private ListView songView;
     private MusicService musicSrv;
@@ -95,17 +98,14 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private ImageButton mNowPlayingPause;
     private ImageButton mNowPlayingPrev;
     private ImageButton mNowPlayingNext;
-    private Bitmap bitmap=null;
+    private Bitmap bitmap = null;
     private SeekBar mSeekBar;
     private Button speak;
-    private DroidSpeech droid;
     MainAdapter mainAdapter;
     MediaPlayer mediaPlayer;
-    private ArrayList<SongInfo> _songs=new ArrayList<SongInfo>();
+    private ArrayList<SongInfo> _songs = new ArrayList<SongInfo>();
     RecyclerView recyclerView;
-    TextView albumHead,tvArtist,tvSong;
-
-
+    TextView albumHead, tvArtist, tvSong;
 
 
     @Override
@@ -132,72 +132,69 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSeekBar=(SeekBar)findViewById(R.id.seek_bar);
+        mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.RECORD_AUDIO)
                     != PackageManager.PERMISSION_GRANTED) {
 
-                String perm[]={Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.RECORD_AUDIO};
-                requestPermissions(perm,1);
+                String perm[] = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
+                requestPermissions(perm, 1);
             }
 
 
 // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
 // app-defined int constant
-
-
 
 
 // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
 // app-defined int constant
         }
 
-         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
-        mainAdapter=new MainAdapter(this,_songs);
-        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this, LinearLayout.HORIZONTAL,false);
-        DividerItemDecoration dividerItemDecoration=new DividerItemDecoration(recyclerView.getContext(), LinearLayout.HORIZONTAL);
+        mainAdapter = new MainAdapter(this, _songs);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayout.HORIZONTAL, false);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), LinearLayout.HORIZONTAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(mainAdapter);
-        mainAdapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(final Button b, View v, SongInfo obj, int position) {
-                try{
-                    if(b.getText().toString().equals("Stop")){
-                        b.setText("Play");
-                        mediaPlayer.stop();
-                        mediaPlayer.reset();
-                        mediaPlayer.release();
-                        mediaPlayer=null;
-                    }
-                    else{
-                        mediaPlayer=new MediaPlayer();
-                        mediaPlayer.setDataSource(obj.getSongUrl());
-                        mediaPlayer.prepareAsync();
-                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                            @Override
-                            public void onPrepared(MediaPlayer mp) {
-                                mp.start();
-                                b.setText("Stop");
-                            }
-                        });
-                    }
+        //  mainAdapter.setOnItemClickListener(new MainAdapter.OnItemClickListener() {
+        //  @Override
+        //    public void onItemClick(final Button b, View v, SongInfo obj, int position) {
+        //    try{
+        //      if(b.getText().toString().equals("Stop")){
+        //        b.setText("Play");
+        //      mediaPlayer.stop();
+        //    mediaPlayer.reset();
+        //  mediaPlayer.release();
+        // mediaPlayer=null;
+        //}
+        //else{
+        //  mediaPlayer=new MediaPlayer();
+        //   mediaPlayer.setDataSource(obj.getSongUrl());
+        // mediaPlayer.prepareAsync();
+        //   mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+        //     @Override
+        //   public void onPrepared(MediaPlayer mp) {
+        //     mp.start();
+        //   b.setText("Stop");
+        //   }
+        //  });
+        // }
 
-                }catch (IOException e){}
-            }
-        });
+        // }catch (IOException e){}
+        // }
+        //});
         CheckPermission();
 
 
 
-        welcome=findViewById(R.id.welcome_text);
         mSlidingPane = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        mNowPlayingAlbum=(ImageView)findViewById(R.id.now_playing_album);
+        mNowPlayingAlbum = (ImageView) findViewById(R.id.now_playing_album);
         mSlidingPaneNow = (SlidingUpPanelLayout) findViewById(R.id.sliding_now_playing);
-        mNowPlayingText=(TextView)findViewById(R.id.now_playing_text);
+        mNowPlayingText = (TextView) findViewById(R.id.now_playing_text);
         mSlidingPane.setParallaxOffset(300);
         mSlidingPaneNow.setParallaxOffset(300);
         mBottomBar = (View) findViewById(R.id.bottom_bar);
@@ -209,16 +206,15 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mAlbumArtSmall = (ImageView) findViewById(R.id.album_cover_small);
         mPlayIcon = (ImageButton) findViewById(R.id.pause_icon);
         mNextIcon = (ImageButton) findViewById(R.id.next_icon);
-        mNowPlaying=(ImageView) findViewById(R.id.now_playing);
-        mNowPlayingArtist=(TextView)findViewById(R.id.now_playing_artist);
-        mShuffleIcon=(ImageButton)findViewById(R.id.shuffle_icon);
-        mNowPlayingPause=(ImageButton)findViewById(R.id.now_playing_pause);
-        mNowPlayingNext=(ImageButton)findViewById(R.id.play_next);
-        mNowPlayingPrev=(ImageButton)findViewById(R.id.play_prev);
-        albumHead=findViewById(R.id.albumHead);
-        speak=findViewById(R.id.speak);
+        mNowPlaying = (ImageView) findViewById(R.id.now_playing);
+        mNowPlayingArtist = (TextView) findViewById(R.id.now_playing_artist);
+        mShuffleIcon = (ImageButton) findViewById(R.id.shuffle_icon);
+        mNowPlayingPause = (ImageButton) findViewById(R.id.now_playing_pause);
+        mNowPlayingNext = (ImageButton) findViewById(R.id.play_next);
+        mNowPlayingPrev = (ImageButton) findViewById(R.id.play_prev);
+        albumHead = findViewById(R.id.albumHead);
         Typeface font = Typeface.createFromAsset(getAssets(), "fonts/muktamaheelight.ttf");
-        Typeface font1=Typeface.createFromAsset(getAssets(),"fonts/muktaamaheeextralight.ttf");
+        Typeface font1 = Typeface.createFromAsset(getAssets(), "fonts/muktaamaheeextralight.ttf");
         mSongName.setTypeface(font);
         mArtistName.setTypeface(font);
         mNowPlayingText.setTypeface(font1);
@@ -226,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         albumHead.setTypeface(font);
 
         mSlidingPane.setAnchorPoint(1.0f);
-        songList=getSongList(this);
+        songList = getSongList(this);
         Collections.sort(songList, new Comparator<Song>() {
             public int compare(Song a, Song b) {
                 return a.getTitle().toUpperCase().compareTo(b.getTitle().toUpperCase());
@@ -265,9 +261,9 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
-                if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.EXPANDED)
-                { mSlidingPane.setTouchEnabled(false);
-                   //controller.show();
+                if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.EXPANDED) {
+                    mSlidingPane.setTouchEnabled(false);
+                    //controller.show();
                 }
 
 // Hide the status bar.
@@ -275,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 else
                     mSlidingPane.setTouchEnabled(true);
 
-                    controller.hide();
+                controller.hide();
             }
 
         });
@@ -298,13 +294,14 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mShuffleIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean shuf= musicSrv.setShuffle();
-                if(!shuf){
+                boolean shuf = musicSrv.setShuffle();
+                if (!shuf) {
                     mShuffleIcon.setBackgroundResource(R.drawable.shuffle_off);
-                    Toast.makeText(getApplicationContext(),"Shuffle Off",Toast.LENGTH_SHORT).show();}
-                else{
+                    Toast.makeText(getApplicationContext(), "Shuffle Off", Toast.LENGTH_SHORT).show();
+                } else {
                     mShuffleIcon.setBackgroundResource(R.drawable.shuffle);
-                    Toast.makeText(getApplicationContext(),"Shuffle On",Toast.LENGTH_SHORT).show();}
+                    Toast.makeText(getApplicationContext(), "Shuffle On", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -313,10 +310,9 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             @Override
             public void onClick(View view) {
                 playpause();
-                if(musicSrv.isPng()){
+                if (musicSrv.isPng()) {
                     mNowPlayingPause.setBackgroundResource(R.drawable.now_playing_pause);
-                }
-                else{
+                } else {
                     mNowPlayingPause.setBackgroundResource(R.drawable.play_now_playing);
                 }
             }
@@ -334,53 +330,98 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
             }
         });
-        droid=new DroidSpeech(this,null);
-        droid.setContinuousSpeechRecognition(true);
-        speak.setOnClickListener(new View.OnClickListener() {
+
+        ImageButton speak1 = findViewById(R.id.speak1);
+        final View back=findViewById(R.id.black);
+        final ImageView mic=findViewById(R.id.mic);
+        final TextView recog=findViewById(R.id.recognize);
+        final SpeechRecognition speechRecognition=new SpeechRecognition(this);
+        speechRecognition.setSpeechRecognitionPermissionListener(new OnSpeechRecognitionPermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+
+            }
+
+            @Override
+            public void onPermissionDenied() {
+
+            }
+        });
+        speechRecognition.setSpeechRecognitionListener(new OnSpeechRecognitionListener() {
+            @Override
+            public void OnSpeechRecognitionStarted() {
+                back.setVisibility(View.VISIBLE);
+                mic.setVisibility(View.VISIBLE);
+                recog.setText("Listening");
+            }
+
+            @Override
+            public void OnSpeechRecognitionStopped() {
+                back.setVisibility(View.INVISIBLE);
+                recog.setText("");
+                mic.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void OnSpeechRecognitionFinalResult(String s2) {
+
+                RecognizerActivity recognizer = new RecognizerActivity(MainActivity.this);
+                int s = recognizer.getType(s2);
+                Log.i("S is",Double.toString(s));
+                if (s >=0){
+                    musicSrv.setSong(s);
+                    musicSrv.playSong();
+
+                    Song s1 = songList.get(s);
+                    setViews(s1);
+                    Toast.makeText(MainActivity.this,"Playing "+s1.getTitle(),Toast.LENGTH_LONG).show();
+
+
+                } else if(s==-1) {
+                    Toast.makeText(MainActivity.this,"Command Not Recognized",Toast.LENGTH_SHORT).show();
+
+                }
+                else if(s==-2){
+                    Toast.makeText(MainActivity.this,"Volume Decreased",Toast.LENGTH_SHORT).show();
+
+
+                    musicSrv.go();
+                }
+                else if(s==-3){
+                    Toast.makeText(MainActivity.this,"Volume Increased",Toast.LENGTH_SHORT).show();
+
+                    musicSrv.go();
+                }
+                speechRecognition.stopSpeechRecognition();
+            }
+
+            @Override
+            public void OnSpeechRecognitionCurrentResult(String s) {
+                recog.setText(s);
+            }
+
+            @Override
+            public void OnSpeechRecognitionError(int i, String s) {
+                recog.setText("");
+            }
+        });
+        speak1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                droid.setContinuousSpeechRecognition(true);
-
-                droid.setShowRecognitionProgressView(true);
-
-                droid.setRecognitionProgressMsgColor(Color.WHITE);
-                if(droid.getContinuousSpeechRecognition())
-                {
-                    int[] colorPallets1 = new int[] {Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
-                    int[] colorPallets2 = new int[] {Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
-
-                    // Setting random color pallets to the recognition progress view
-                    droid.setRecognitionProgressViewColors(new Random().nextInt(2) == 0 ? colorPallets1 : colorPallets2);
-                }
-                droid.startDroidSpeechRecognition();
-                speechrecog(droid);
-
+            speechRecognition.startSpeechRecognition();
             }
-
         });
-    loadSongs();
+        loadSongs();
     }
 
-    private void CheckPermission(){
-        if(Build.VERSION.SDK_INT>=23){
-            if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!=
-                    PackageManager.PERMISSION_GRANTED){
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},123);
-                return;
-            }
-        }
-        else{
-            loadSongs();
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode){
+        switch (requestCode) {
             case 123:
-                if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     loadSongs();
-                    Toast.makeText(this,"Permission Denied",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
                     CheckPermission();
                 }
                 break;
@@ -389,29 +430,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         }
 
     }
-    private void loadSongs(){
-        Uri uri= MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String selection=MediaStore.Audio.Media.IS_MUSIC+"!=0";
-        Cursor cursor=getContentResolver().query(uri,null,selection,null,null);
-        if(cursor!=null){
-            if(cursor.moveToFirst()) {
-                do {
-                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-                    String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                    String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                    String albumname=cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                    long albumArt=cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                    SongInfo s=new SongInfo(name,artist,url,albumname,albumArt);
-                    _songs.add(s);
-                }while (cursor.moveToNext());
-            }
-            cursor.close();
-            mainAdapter=new MainAdapter(this,_songs);
-        }
-
-    }
-
-
 
 
     private ServiceConnection musicConnection = new ServiceConnection() {
@@ -434,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
     public ArrayList<Song> getSongList(Context context) {
         ArrayList<Song> songList1;
-        songList1=new ArrayList<Song>();
+        songList1 = new ArrayList<Song>();
         ContentResolver musicResolver = context.getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
@@ -513,17 +531,16 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-                catch (NullPointerException e){
+                } catch (NullPointerException e) {
                     e.printStackTrace();
-                    bitmap= BitmapFactory.decodeResource(getResources(),R.drawable.logo_white);
+                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo_white);
                     Blurry.with(getApplicationContext()).from(bitmap).into(mAlbumArt);
                     Blurry.with(getApplicationContext()).from(bitmap).into(mNowPlaying);
                     mAlbumArtSmall.setImageBitmap(bitmap);
                     mNowPlayingAlbum.setImageBitmap(bitmap);
                 }
-                if(bitmap==null){
-                    bitmap= BitmapFactory.decodeResource(getResources(),R.drawable.logo_white);
+                if (bitmap == null) {
+                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo_white);
                     Blurry.with(getApplicationContext()).from(bitmap).into(mAlbumArt);
                     Blurry.with(getApplicationContext()).from(bitmap).into(mNowPlaying);
                     mAlbumArtSmall.setImageBitmap(bitmap);
@@ -531,7 +548,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 }
                 mAlbumArt.startAnimation(fadeIn);
                 mNowPlaying.startAnimation(fadeIn);
-                bitmap=null;
+                bitmap = null;
 
             }
 
@@ -551,31 +568,26 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             setController();
             playbackPaused = false;
         }
-       // controller.show(0);
+        // controller.show(0);
 
 
     }
 
 
-
     @Override
     public void onBackPressed() {
-        if(mSlidingPane.getPanelState()== SlidingUpPanelLayout.PanelState.EXPANDED &&mSlidingPaneNow.getPanelState()== SlidingUpPanelLayout.PanelState.COLLAPSED){
+        if (mSlidingPane.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED && mSlidingPaneNow.getPanelState() == SlidingUpPanelLayout.PanelState.COLLAPSED) {
             mSlidingPane.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
-        }
-        else if(mSlidingPaneNow.getPanelState()== SlidingUpPanelLayout.PanelState.EXPANDED){
+        } else if (mSlidingPaneNow.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED) {
             mSlidingPaneNow.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             return;
-        }
-
-        else{
+        } else {
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle("Exit")
                     .setMessage("Are you sure you want to exit?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                    {
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             finish();
@@ -588,12 +600,14 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         }
 
     }
-    public void playNext(){
-        int song=musicSrv.playNext();
-        Song song2=songList.get(song);
+
+    public void playNext() {
+        int song = musicSrv.playNext();
+        Song song2 = songList.get(song);
         setViews(song2);
     }
-    public void playpause(){
+
+    public void playpause() {
         if (musicSrv.isPng()) {
             musicSrv.pausePlayer();
             mPlayIcon.setBackgroundResource(R.drawable.play);
@@ -602,16 +616,17 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
             mPlayIcon.setBackgroundResource(R.drawable.pause);
         }
     }
-    public void playPrev(){
-        int so=musicSrv.playPrev();
-        Song song3=songList.get(so);
+
+    public void playPrev() {
+        int so = musicSrv.playPrev();
+        Song song3 = songList.get(so);
         setViews(song3);
     }
 
     @Override
     protected void onDestroy() {
         stopService(playIntent);
-        musicSrv=null;
+        musicSrv = null;
         super.onDestroy();
     }
 
@@ -622,23 +637,23 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
     @Override
     public void pause() {
-        playbackPaused=true;
+        playbackPaused = true;
         musicSrv.pausePlayer();
     }
 
     @Override
     public int getDuration() {
-        if(musicSrv!=null&&musicBound&&musicSrv.isPng()) {
+        if (musicSrv != null && musicBound && musicSrv.isPng()) {
             return musicSrv.getDur();
-        }else
+        } else
             return 0;
     }
 
     @Override
     public int getCurrentPosition() {
-        if(musicSrv!=null&&musicBound&&musicSrv.isPng()){
+        if (musicSrv != null && musicBound && musicSrv.isPng()) {
             return musicSrv.getPosn();
-        }else
+        } else
             return 0;
     }
 
@@ -649,7 +664,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
     @Override
     public boolean isPlaying() {
-        if(musicSrv!=null&&musicBound){
+        if (musicSrv != null && musicBound) {
             return musicSrv.isPng();
         }
         return false;
@@ -679,25 +694,26 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     public int getAudioSessionId() {
         return 0;
     }
-    private void setController(){
-        controller=new MusicController(this,false);
+
+    private void setController() {
+        controller = new MusicController(this, false);
         controller.setPrevNextListeners(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 musicSrv.playNext();
-                if(playbackPaused){
+                if (playbackPaused) {
                     setController();
-                    playbackPaused=false;
+                    playbackPaused = false;
                 }
-                 //controller.show(0);
+                //controller.show(0);
             }
         }, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 musicSrv.playPrev();
-                if(playbackPaused){
+                if (playbackPaused) {
                     setController();
-                    playbackPaused=false;
+                    playbackPaused = false;
                 }
                 //controller.show(0);
             }
@@ -707,66 +723,42 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         controller.setEnabled(false);
 
     }
-    public void speechrecog(final DroidSpeech droid){
 
-        musicSrv.pausePlayer();
-        droid.setOnDroidSpeechListener(new OnDSListener() {
-            @Override
-            public void onDroidSpeechSupportedLanguages(String currentSpeechLanguage, List<String> supportedSpeechLanguages) {
 
+
+
+    private void CheckPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 123);
+                return;
             }
+        } else {
+            loadSongs();
+        }
+    }
 
-            @Override
-            public void onDroidSpeechRmsChanged(float rmsChangedValue) {
-
+    private void loadSongs() {
+        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
+        Cursor cursor = getContentResolver().query(uri, null, selection, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
+                    String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                    String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                    String albumname = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                    long albumArt = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+                    SongInfo s = new SongInfo(name, artist, url, albumname, albumArt);
+                    _songs.add(s);
+                } while (cursor.moveToNext());
             }
-
-            @Override
-            public void onDroidSpeechLiveResult(String liveSpeechResult) {
-
-
-                }
-
-
-            @Override
-            public void onDroidSpeechFinalResult(String finalSpeechResult) {
-                RecognizerActivity recognizer = new RecognizerActivity(MainActivity.this);
-                int s = recognizer.getType(finalSpeechResult);
-                Log.i("S is",Double.toString(s));
-                if (s >=0){
-                    musicSrv.setSong(s);
-                    musicSrv.playSong();
-
-                    Song s1 = songList.get(s);
-                    setViews(s1);
-                    Toast.makeText(MainActivity.this,"Playing "+s1.getTitle(),Toast.LENGTH_LONG).show();
-                    droid.closeDroidSpeechOperations();
-
-                } else if(s==-1) {
-                    Toast.makeText(MainActivity.this,"Command Not Recognized",Toast.LENGTH_SHORT).show();
-                }
-                else if(s==-2){
-                    Toast.makeText(MainActivity.this,"Volume Decreased",Toast.LENGTH_SHORT).show();
-                    droid.closeDroidSpeechOperations();
-                    musicSrv.go();
-                }
-                else if(s==-3){
-                    Toast.makeText(MainActivity.this,"Volume Increased",Toast.LENGTH_SHORT).show();
-                    droid.closeDroidSpeechOperations();
-                    musicSrv.go();
-                }
-            }
-
-            @Override
-            public void onDroidSpeechClosedByUser() {
-
-            }
-
-            @Override
-            public void onDroidSpeechError(String errorMsg) {
-
-            }
-        });
+            cursor.close();
+        }
 
     }
+
+
 }

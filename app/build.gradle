@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.rohan.amusic"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -37,7 +37,8 @@ dependencies {
     compile 'com.android.support:design:26.1.0'
     compile 'com.android.support:cardview-v7:26.1.0'
     compile 'com.android.support:recyclerview-v7:26.1.0'
-    compile 'com.github.vikramezhil:DroidSpeech:v2.0.3'
+
+    compile 'com.github.maxwellobi:android-speech-recognition:v1.0.0-beta.1'
 
 
 }
