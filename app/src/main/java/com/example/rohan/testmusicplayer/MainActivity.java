@@ -350,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         speechRecognition.setSpeechRecognitionListener(new OnSpeechRecognitionListener() {
             @Override
             public void OnSpeechRecognitionStarted() {
+                if(musicSrv.isPng())
                 musicSrv.pausePlayer();
                 back.setVisibility(View.VISIBLE);
                 mic.setVisibility(View.VISIBLE);
@@ -358,7 +359,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
             @Override
             public void OnSpeechRecognitionStopped() {
-                musicSrv.go();
                 back.setVisibility(View.INVISIBLE);
                 recog.setText("");
                 mic.setVisibility(View.INVISIBLE);
@@ -381,6 +381,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
                 } else if(s==-1) {
                     Toast.makeText(MainActivity.this,"Command Not Recognized",Toast.LENGTH_SHORT).show();
+                    musicSrv.go();
 
                 }
                 else if(s==-2){
